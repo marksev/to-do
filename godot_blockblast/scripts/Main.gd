@@ -119,16 +119,32 @@ func _input(event: InputEvent):
 	if active_drag_piece == null:
 		return
 
-	if event is InputEventMouseMotion:
-		active_drag_piece.update_drag_position(event.global_position)
-		var shape = active_drag_piece.shape
-		var grid_pos = board.get_snap_position(shape, event.global_position)
-		board.show_ghost(shape, active_drag_piece.piece_color, grid_pos.x, grid_pos.y)
+	var drag_pos := Vector2.ZERO
+	var is_motion := false
+	var is_release := false
 
+	if event is InputEventMouseMotion:
+		drag_pos = event.global_position
+		is_motion = true
+	elif event is InputEventScreenDrag:
+		drag_pos = event.position
+		is_motion = true
 	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		drag_pos = event.global_position
+		is_release = true
+	elif event is InputEventScreenTouch and not event.pressed:
+		drag_pos = event.position
+		is_release = true
+
+	if is_motion:
+		active_drag_piece.update_drag_position(drag_pos)
+		var shape = active_drag_piece.shape
+		var grid_pos = board.get_snap_position(shape, drag_pos)
+		board.show_ghost(shape, active_drag_piece.piece_color, grid_pos.x, grid_pos.y)
+	elif is_release:
 		var piece = active_drag_piece
 		active_drag_piece = null
-		piece.end_drag(event.global_position)
+		piece.end_drag(drag_pos)
 
 func _check_tray_refill():
 	var all_used = true

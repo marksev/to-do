@@ -91,8 +91,17 @@ func _create_cell(row: int, col: int) -> Panel:
 func _gui_input(event: InputEvent):
 	if used:
 		return
+	# Support both mouse press and touch tap
+	var pressed_pos = Vector2.ZERO
+	var got_press = false
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		_start_drag(event.global_position)
+		pressed_pos = event.global_position
+		got_press = true
+	elif event is InputEventScreenTouch and event.pressed:
+		pressed_pos = event.position
+		got_press = true
+	if got_press:
+		_start_drag(pressed_pos)
 		get_viewport().set_input_as_handled()
 
 func _start_drag(global_pos: Vector2):

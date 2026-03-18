@@ -22,14 +22,14 @@ mouse_filter = 2
 [node name="Board" parent="." instance=ExtResource("4")]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 16.0
+offset_top = 110.0
 
 [node name="Tray" type="Panel" parent="."]
 layout_mode = 0
 offset_left = 16.0
-offset_top = 597.0
+offset_top = 690.0
 offset_right = 581.0
-offset_bottom = 777.0
+offset_bottom = 878.0
 
 [node name="UI" parent="." instance=ExtResource("5")]
 anchors_preset = 15
