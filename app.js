@@ -154,13 +154,15 @@ async function loadTodos() {
 
 async function handleAddTodo(e) {
   e.preventDefault();
-  const input = document.getElementById('new-todo-input');
-  const title = input.value.trim();
+  const input    = document.getElementById('new-todo-input');
+  const catSel   = document.getElementById('new-todo-category');
+  const title    = input.value.trim();
+  const category = catSel.value;
   if (!title) return;
 
   const { data, error } = await sb
     .from('todos')
-    .insert({ user_id: currentUser.id, title })
+    .insert({ user_id: currentUser.id, title, category })
     .select()
     .single();
   if (error) { console.error(error); return; }
@@ -307,40 +309,58 @@ async function renderCalendar() {
     return;
   }
 
-  // Build table
-  let html = '<table class="cal-table"><thead><tr>';
-  html += '<th></th>'; // todo label column
+  const foodTodos  = todos.filter(t => t.category === 'FOOD');
+  const otherTodos = todos.filter(t => t.category !== 'FOOD');
 
-  for (let d = 1; d <= daysInMonth; d++) {
-    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const isToday = dateStr === todayDateStr;
-    const dow = new Date(calYear, calMonth, d)
-      .toLocaleDateString('en-US', { weekday: 'short' }).slice(0,2);
-    html += `<th class="${isToday ? 'today-col' : ''}">${d}<br/><small>${dow}</small></th>`;
-  }
-  html += '</tr></thead><tbody>';
-
-  todos.forEach(todo => {
-    html += `<tr><td class="cal-row-label" title="${escHtml(todo.title)}">${escHtml(todo.title)}</td>`;
-
+  function buildHeader() {
+    let h = '<tr><th></th>';
     for (let d = 1; d <= daysInMonth; d++) {
       const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const isFuture = dateStr > todayDateStr;
-      const isToday  = dateStr === todayDateStr;
-      const val      = dailyLogs[logKey(todo.id, dateStr)];
-
-      let cls = 'none';
-      if (isFuture)        cls = 'future';
-      else if (val === true)  cls = 'yes';
-      else if (val === false) cls = 'no';
-
-      const todayCls = isToday ? ' today-dot' : '';
-      const title    = isFuture ? '' : (val === true ? 'Yes ✓' : val === false ? 'No ✗' : 'Not logged');
-
-      html += `<td class="cal-cell"><span class="cal-dot ${cls}${todayCls}" title="${title}"></span></td>`;
+      const isToday = dateStr === todayDateStr;
+      const dow = new Date(calYear, calMonth, d)
+        .toLocaleDateString('en-US', { weekday: 'short' }).slice(0,2);
+      h += `<th class="${isToday ? 'today-col' : ''}">${d}<br/><small>${dow}</small></th>`;
     }
-    html += '</tr>';
-  });
+    h += '</tr>';
+    return h;
+  }
+
+  function buildTodoRows(list) {
+    return list.map(todo => {
+      let row = `<tr><td class="cal-row-label" title="${escHtml(todo.title)}">${escHtml(todo.title)}</td>`;
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr  = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        const isFuture = dateStr > todayDateStr;
+        const isToday  = dateStr === todayDateStr;
+        const val      = dailyLogs[logKey(todo.id, dateStr)];
+        let cls = 'none';
+        if (isFuture)           cls = 'future';
+        else if (val === true)  cls = 'yes';
+        else if (val === false) cls = 'no';
+        const todayCls = isToday ? ' today-dot' : '';
+        const title    = isFuture ? '' : (val === true ? 'Yes ✓' : val === false ? 'No ✗' : 'Not logged');
+        row += `<td class="cal-cell"><span class="cal-dot ${cls}${todayCls}" title="${title}"></span></td>`;
+      }
+      row += '</tr>';
+      return row;
+    }).join('');
+  }
+
+  function buildSectionHeader(label, colspan) {
+    return `<tr><td colspan="${colspan + 1}" class="cal-section-header">${label}</td></tr>`;
+  }
+
+  const colspan = daysInMonth;
+  let html = '<table class="cal-table"><thead>' + buildHeader() + '</thead><tbody>';
+
+  if (foodTodos.length > 0) {
+    html += buildSectionHeader('FOOD', colspan);
+    html += buildTodoRows(foodTodos);
+  }
+  if (otherTodos.length > 0) {
+    html += buildSectionHeader('OTHER', colspan);
+    html += buildTodoRows(otherTodos);
+  }
 
   html += '</tbody></table>';
   container.innerHTML = html;
@@ -358,12 +378,21 @@ function renderManage() {
   empty.classList.add('hidden');
 
   todos.forEach(todo => {
+    const cat = todo.category || 'OTHER';
     const li = document.createElement('li');
     li.className = 'manage-item';
     li.innerHTML = `
       <span class="manage-item-title">${escHtml(todo.title)}</span>
+      <button class="category-badge ${cat === 'FOOD' ? 'food' : 'other'}" title="Toggle category">${cat}</button>
       <button class="delete-btn" title="Delete task">✕</button>
     `;
+    li.querySelector('.category-badge').addEventListener('click', async () => {
+      const newCat = cat === 'FOOD' ? 'OTHER' : 'FOOD';
+      const { error } = await sb.from('todos').update({ category: newCat }).eq('id', todo.id);
+      if (error) { console.error(error); return; }
+      todo.category = newCat;
+      renderManage();
+    });
     li.querySelector('.delete-btn').addEventListener('click', () => {
       if (confirm(`Delete "${todo.title}"? This will also remove all its history.`))
         deleteTodo(todo.id);

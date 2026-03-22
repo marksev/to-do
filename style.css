@@ -449,6 +449,18 @@ html, body {
 }
 .cal-table tbody tr:last-child td { border-bottom: none; }
 
+/* ── Calendar category section headers ── */
+.cal-section-header {
+  padding: 10px 8px 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
 /* ══════════════════════════════════════
    MANAGE VIEW
 ══════════════════════════════════════ */
@@ -474,6 +486,42 @@ html, body {
 }
 .add-form input::placeholder { color: var(--text-dim); opacity: .7; }
 .add-form .btn-primary { padding: 13px 22px; white-space: nowrap; border-radius: var(--radius-sm); }
+
+.category-select {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 13px 12px;
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color .2s;
+}
+.category-select:focus { border-color: var(--accent); }
+
+.category-badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+  border: 1.5px solid;
+  transition: opacity .15s;
+  flex-shrink: 0;
+}
+.category-badge:hover { opacity: .75; }
+.category-badge.food {
+  background: rgba(234,179,8,.15);
+  color: #eab308;
+  border-color: #eab308;
+}
+.category-badge.other {
+  background: rgba(124,111,255,.15);
+  color: var(--accent);
+  border-color: var(--accent);
+}
 
 .manage-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
 
