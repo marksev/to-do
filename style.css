@@ -559,6 +559,73 @@ html, body {
 .delete-btn:hover { background: var(--no-bg); color: var(--no); border-color: var(--no); }
 
 /* ══════════════════════════════════════
+   STREAK VIEW
+══════════════════════════════════════ */
+.streak-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.streak-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  transition: border-color .2s, box-shadow .2s;
+}
+.streak-card:hover { border-color: var(--accent); }
+.streak-card.streak-active {
+  border-color: #5a3800;
+  box-shadow: 0 0 16px rgba(249,115,22,.08);
+}
+
+.streak-rank {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--surface3);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.streak-card:nth-child(1) .streak-rank { background: linear-gradient(135deg,#b45309,#f59e0b); color:#fff; }
+.streak-card:nth-child(2) .streak-rank { background: linear-gradient(135deg,#6b7280,#9ca3af); color:#fff; }
+.streak-card:nth-child(3) .streak-rank { background: linear-gradient(135deg,#92400e,#d97706); color:#fff; }
+
+.streak-task-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.streak-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.streak-flame { font-size: 20px; }
+.streak-days {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f97316;
+  line-height: 1;
+}
+.streak-label {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+/* ══════════════════════════════════════
    EMPTY STATE
 ══════════════════════════════════════ */
 .empty-state {

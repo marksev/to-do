@@ -128,7 +128,7 @@ function bindAppUI() {
 }
 
 function showView(name) {
-  ['today','calendar','manage'].forEach(v => {
+  ['today','calendar','manage','streak'].forEach(v => {
     document.getElementById(`${v}-view`).classList.toggle('hidden', v !== name);
   });
   document.querySelectorAll('.nav-btn[data-view]').forEach(btn => {
@@ -137,6 +137,7 @@ function showView(name) {
   if (name === 'today')    renderToday();
   if (name === 'calendar') { renderCalendar(); }
   if (name === 'manage')   renderManage();
+  if (name === 'streak')   renderStreak();
 }
 
 /* ═══════════════════════════════════════════════
@@ -443,6 +444,76 @@ async function calcStreak() {
     if (streak > 90) break;
   }
   return streak;
+}
+
+/* ═══════════════════════════════════════════════
+   RENDER: STREAK VIEW
+   Shows per-task streaks sorted by longest current streak
+═══════════════════════════════════════════════ */
+async function renderStreak() {
+  const list  = document.getElementById('streak-list');
+  const empty = document.getElementById('streak-empty');
+  list.innerHTML = '';
+
+  if (todos.length === 0) { empty.classList.remove('hidden'); return; }
+  empty.classList.add('hidden');
+
+  // Load last 365 days of logs
+  const today = new Date();
+  today.setHours(12, 0, 0, 0);
+  const from = new Date(today);
+  from.setDate(from.getDate() - 365);
+  const fromStr = from.toISOString().slice(0, 10);
+
+  const { data } = await sb
+    .from('daily_logs')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .gte('date', fromStr)
+    .order('date', { ascending: false });
+
+  // Build map: todoId → { date → completed }
+  const byTodo = {};
+  (data || []).forEach(row => {
+    if (!byTodo[row.todo_id]) byTodo[row.todo_id] = {};
+    byTodo[row.todo_id][row.date] = row.completed;
+  });
+
+  // Calculate current streak per task
+  const results = todos.map(todo => {
+    const logs = byTodo[todo.id] || {};
+    let streak = 0;
+    let cursor = new Date(today);
+    for (let i = 0; i < 365; i++) {
+      const ds = cursor.toISOString().slice(0, 10);
+      if (logs[ds] === true) {
+        streak++;
+        cursor.setDate(cursor.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+    return { todo, streak };
+  });
+
+  // Sort by streak descending
+  results.sort((a, b) => b.streak - a.streak);
+
+  results.forEach(({ todo, streak }, idx) => {
+    const rank = idx + 1;
+    const card = document.createElement('div');
+    card.className = 'streak-card' + (streak > 0 ? ' streak-active' : '');
+    card.innerHTML = `
+      <span class="streak-rank">${rank}</span>
+      <span class="streak-task-title">${escHtml(todo.title)}</span>
+      <div class="streak-info">
+        <span class="streak-flame">${streak > 0 ? '🔥' : '💤'}</span>
+        <span class="streak-days">${streak}</span>
+        <span class="streak-label">day${streak !== 1 ? 's' : ''}</span>
+      </div>
+    `;
+    list.appendChild(card);
+  });
 }
 
 /* ═══════════════════════════════════════════════
