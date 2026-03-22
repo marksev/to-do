@@ -8,8 +8,12 @@ CREATE TABLE IF NOT EXISTS todos (
   id         UUID        DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id    UUID        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   title      TEXT        NOT NULL,
+  category   TEXT        NOT NULL DEFAULT 'OTHER' CHECK (category IN ('FOOD', 'OTHER')),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Add category column to existing deployments (safe to run even if column exists)
+ALTER TABLE todos ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'OTHER' CHECK (category IN ('FOOD', 'OTHER'));
 
 -- 2. DAILY_LOGS table
 CREATE TABLE IF NOT EXISTS daily_logs (
