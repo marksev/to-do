@@ -74,6 +74,9 @@
         <button class="nav-btn" data-view="manage">
           <span class="nav-icon">⚙️</span> Manage Tasks
         </button>
+        <button class="nav-btn" data-view="streak">
+          <span class="nav-icon">🔥</span> Streak
+        </button>
       </nav>
       <button id="logout-btn" class="logout-btn">
         <span>⎋</span> Logout
@@ -127,6 +130,20 @@
         </div>
       </section>
 
+      <!-- ── STREAK VIEW ── -->
+      <section id="streak-view" class="view-section hidden">
+        <div class="view-header">
+          <div>
+            <h2>Streak</h2>
+            <p class="subtitle">Top streaks by task — consecutive YES days from today</p>
+          </div>
+        </div>
+        <div id="streak-empty" class="empty-state hidden">
+          <p>No tasks yet. Go to <strong>Manage Tasks</strong> to add some!</p>
+        </div>
+        <div id="streak-list" class="streak-list"></div>
+      </section>
+
       <!-- ── MANAGE VIEW ── -->
       <section id="manage-view" class="view-section hidden">
         <div class="view-header">
@@ -157,6 +174,7 @@
     <button class="nav-btn active" data-view="today">☀️<br/><small>Today</small></button>
     <button class="nav-btn" data-view="calendar">📅<br/><small>Calendar</small></button>
     <button class="nav-btn" data-view="manage">⚙️<br/><small>Tasks</small></button>
+    <button class="nav-btn" data-view="streak">🔥<br/><small>Streak</small></button>
   </nav>
 
   <script src="app.js"></script>
